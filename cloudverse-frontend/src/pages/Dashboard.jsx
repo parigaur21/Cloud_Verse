@@ -18,7 +18,7 @@ export default function Dashboard() {
 
     return () => clearInterval(interval);
   }, []);
-
+  //async
   async function fetchDeployments() {
     const data = await getDeployments();
     setDeployments(data);
