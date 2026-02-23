@@ -1,28 +1,30 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
+const morgan = require("morgan");
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+app.use(morgan("dev"));
 
 let deployments = [];
 
-/*
-----------------------------------------
-GET ALL DEPLOYMENTS
-----------------------------------------
-*/
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    service: "cloudverse-backend",
+    environment: process.env.NODE_ENV,
+  });
+});
+
 app.get("/deployments", (req, res) => {
   res.json(deployments);
 });
 
-/*
-----------------------------------------
-CREATE NEW DEPLOYMENT
-----------------------------------------
-*/
 app.post("/deploy", (req, res) => {
   const id = Date.now();
 
@@ -39,25 +41,17 @@ app.post("/deploy", (req, res) => {
   res.json(newDeployment);
 });
 
-/*
-----------------------------------------
-SIMULATE CI/CD PIPELINE
-----------------------------------------
-*/
 function simulateDeployment(id) {
   const deployment = deployments.find((d) => d.id === id);
-
   if (!deployment) return;
 
-  // Step 1 → Testing
   setTimeout(() => {
     deployment.status = "Testing";
     deployment.logs.push("Running tests...");
   }, 3000);
 
-  // Step 2 → Fail or Deploying
   setTimeout(() => {
-    const failed = Math.random() < 0.3; // 30% chance + test fail hona + build break hoti h + deployment crash !!
+    const failed = Math.random() < 0.3;
 
     if (failed) {
       deployment.status = "Failed";
@@ -69,7 +63,6 @@ function simulateDeployment(id) {
     deployment.logs.push("Deploying to production...");
   }, 6000);
 
-  // Step 3 → Completed
   setTimeout(() => {
     if (deployment.status !== "Failed") {
       deployment.status = "Completed";
@@ -78,11 +71,6 @@ function simulateDeployment(id) {
   }, 9000);
 }
 
-/*
-----------------------------------------
-START SERVER
-----------------------------------------
-*/
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
