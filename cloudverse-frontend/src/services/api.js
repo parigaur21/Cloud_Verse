@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:5000";
+// In production, Nginx will proxy /api to the backend
+const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 export async function getHealth() {
   const res = await fetch(`${BASE_URL}/health`);

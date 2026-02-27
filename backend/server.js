@@ -1,76 +1,148 @@
 require("dotenv").config();
-
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+const winston = require("winston");
+const { open } = require("sqlite");
+const sqlite3 = require("sqlite3");
+const rateLimit = require("express-rate-limit");
+const path = require("path");
+
+// Logging Configuration
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      ),
+    }),
+    new winston.transports.File({ filename: "error.log", level: "error" }),
+    new winston.transports.File({ filename: "combined.log" }),
+  ],
+});
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, "cloudverse.db");
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(morgan("dev"));
+app.use(morgan("combined", { stream: { write: (message) => logger.info(message.trim()) } }));
 
-let deployments = [];
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+});
+app.use("/deploy", limiter);
+
+let db;
+
+// Initialize Database
+async function initDb() {
+  db = await open({
+    filename: DB_PATH,
+    driver: sqlite3.Database,
+  });
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS deployments (
+      id INTEGER PRIMARY KEY,
+      status TEXT,
+      logs TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  logger.info("Database initialized successfully");
+}
 
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "OK",
     service: "cloudverse-backend",
-    environment: process.env.NODE_ENV,
+    uptime: process.uptime(),
+    db_connected: !!db,
   });
 });
 
-app.get("/deployments", (req, res) => {
-  res.json(deployments);
+app.get("/deployments", async (req, res) => {
+  try {
+    const rows = await db.all("SELECT * FROM deployments ORDER BY created_at DESC LIMIT 50");
+    const formattedRows = rows.map(row => ({
+      ...row,
+      logs: JSON.parse(row.logs)
+    }));
+    res.json(formattedRows);
+  } catch (error) {
+    logger.error("Failed to fetch deployments", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
-app.post("/deploy", (req, res) => {
-  const id = Date.now();
+app.post("/deploy", async (req, res) => {
+  try {
+    const id = Date.now();
+    const initialLogs = JSON.stringify(["Build sequence initiated..."]);
 
-  const newDeployment = {
-    id,
-    status: "Building",
-    logs: ["Build started..."],
-  };
+    await db.run(
+      "INSERT INTO deployments (id, status, logs) VALUES (?, ?, ?)",
+      [id, "Building", initialLogs]
+    );
 
-  deployments.push(newDeployment);
+    simulateDeployment(id);
 
-  simulateDeployment(id);
-
-  res.json(newDeployment);
+    res.json({ id, status: "Building", logs: ["Build sequence initiated..."] });
+  } catch (error) {
+    logger.error("Deployment failed", error);
+    res.status(500).json({ error: "Could not initiate deployment" });
+  }
 });
 
-function simulateDeployment(id) {
-  const deployment = deployments.find((d) => d.id === id);
-  if (!deployment) return;
+async function updateDeployment(id, status, newLogs) {
+  try {
+    const row = await db.get("SELECT logs FROM deployments WHERE id = ?", id);
+    if (!row) return;
 
-  setTimeout(() => {
-    deployment.status = "Testing";
-    deployment.logs.push("Running tests...");
-  }, 3000);
+    let logs = JSON.parse(row.logs);
+    logs = [...logs, ...newLogs];
 
-  setTimeout(() => {
-    const failed = Math.random() < 0.3;
-
-    if (failed) {
-      deployment.status = "Failed";
-      deployment.logs.push("❌ Tests failed. Deployment aborted.");
-      return;
-    }
-
-    deployment.status = "Deploying";
-    deployment.logs.push("Deploying to production...");
-  }, 6000);
-
-  setTimeout(() => {
-    if (deployment.status !== "Failed") {
-      deployment.status = "Completed";
-      deployment.logs.push("Deployment successful 🚀");
-    }
-  }, 9000);
+    await db.run(
+      "UPDATE deployments SET status = ?, logs = ? WHERE id = ?",
+      [status, JSON.stringify(logs), id]
+    );
+  } catch (error) {
+    logger.error(`Error updating deployment ${id}`, error);
+  }
 }
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+function simulateDeployment(id) {
+  setTimeout(() => updateDeployment(id, "Testing", ["🔍 Running security scan...", "🧪 Running unit tests..."]), 3000);
+
+  setTimeout(() => {
+    const failed = Math.random() < 0.2;
+    if (failed) {
+      updateDeployment(id, "Failed", ["❌ Error: Test suite failed in module 'core-api'", "⚠️ Stack trace logged to cloud-watch"]);
+    } else {
+      updateDeployment(id, "Deploying", ["📦 Packaging assets...", "🚀 Pushing to edge nodes..."]);
+
+      setTimeout(() => {
+        updateDeployment(id, "Completed", ["✅ Deployment successful!", "🌐 App live at: https://cv-instance-" + id.toString().slice(-4) + ".cloudverse.io"]);
+      }, 3000);
+    }
+  }, 6000);
+}
+
+// Start Server
+initDb().then(() => {
+  app.listen(PORT, "0.0.0.0", () => {
+    logger.info(`🚀 CloudVerse Engine running on port ${PORT}`);
+  });
 });
