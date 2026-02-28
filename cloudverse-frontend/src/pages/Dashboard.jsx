@@ -24,78 +24,79 @@ export default function Dashboard() {
   }
 
   async function handleDeploy() {
-    await createDeployment();
+    const name = prompt("Enter a name for your deployment:", `cv-app-${Math.floor(Math.random() * 1000)}`);
+    if (!name) return;
+    await createDeployment(name);
     fetchDeployments();
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10">
+    <div className="space-y-12">
       {/* Header Section */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-border">
         <div>
-          <h2 className="text-4xl font-bold tracking-tight mb-2">
-            Workspace <span className="text-primary">Overview</span>
+          <h2 className="text-3xl font-bold tracking-tighter mb-1 text-white">
+            Workspace Overview
           </h2>
-          <p className="text-gray-400">Manage and monitor your cloud infrastructure in real-time.</p>
+          <p className="text-gray-400 text-sm">Manage and monitor your cloud infrastructure in real-time.</p>
         </div>
         <button
           onClick={handleDeploy}
-          className="glass-button bg-primary hover:bg-primary-hover px-8 py-3 rounded-2xl flex items-center gap-2 font-semibold shadow-xl shadow-primary/20 group translate-y-0 hover:-translate-y-1 transition-all duration-300"
+          className="vercel-button flex items-center gap-2"
         >
-          <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
+          <Plus size={18} />
           Deploy New App
         </button>
       </header>
 
       {/* Stats Cards */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="glass-card p-6 rounded-3xl group hover:border-primary/30 transition-all duration-300">
-          <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4">
-            <Activity className="text-blue-500" size={24} />
+        <div className="vercel-card p-6 border-white/5 bg-white/[0.02]">
+          <div className="flex items-center gap-3 mb-4 text-gray-400">
+            <Activity size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Active Deployments</span>
           </div>
-          <div className="text-3xl font-bold mb-1">{deployments.length}</div>
-          <div className="text-sm text-gray-500 font-medium uppercase tracking-wider">Active Deployments</div>
+          <div className="text-4xl font-bold text-white tabular-nums">{deployments.length}</div>
         </div>
-        <div className="glass-card p-6 rounded-3xl group hover:border-green-500/30 transition-all duration-300">
-          <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center mb-4">
-            <Server className="text-green-500" size={24} />
+        <div className="vercel-card p-6 border-white/5 bg-white/[0.02]">
+          <div className="flex items-center gap-3 mb-4 text-gray-400">
+            <Server size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">System Uptime</span>
           </div>
-          <div className="text-3xl font-bold mb-1">99.9%</div>
-          <div className="text-sm text-gray-500 font-medium uppercase tracking-wider">System Uptime</div>
+          <div className="text-4xl font-bold text-white tabular-nums">99.99%</div>
         </div>
-        <div className="glass-card p-6 rounded-3xl group hover:border-accent/30 transition-all duration-300">
-          <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center mb-4">
-            <Clock className="text-accent" size={24} />
+        <div className="vercel-card p-6 border-white/5 bg-white/[0.02]">
+          <div className="flex items-center gap-3 mb-4 text-gray-400">
+            <Clock size={16} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Avg. Latency</span>
           </div>
-          <div className="text-3xl font-bold mb-1">12ms</div>
-          <div className="text-sm text-gray-500 font-medium uppercase tracking-wider">Avg. Latency</div>
+          <div className="text-4xl font-bold text-white tabular-nums">12ms</div>
         </div>
       </section>
 
       {/* Deployments List */}
       <section className="space-y-6">
-        <div className="flex items-center justify-between px-2">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <Rocket className="text-primary" size={20} />
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold flex items-center gap-2 text-white">
             Recent Activity
           </h3>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
             <input
               type="text"
-              placeholder="Filter instances..."
-              className="bg-white/5 border border-white/5 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-primary/30 transition-colors w-64"
+              placeholder="Search deployments..."
+              className="bg-black border border-border rounded-vercel py-1.5 pl-9 pr-4 text-xs focus:outline-none focus:border-white/20 transition-colors w-64 placeholder:text-gray-600"
             />
           </div>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           {deployments.length === 0 && !loading ? (
-            <div className="glass-card p-12 rounded-3xl text-center border-dashed border-white/10">
-              <div className="bg-white/5 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Rocket className="text-gray-500" size={32} />
+            <div className="vercel-card p-20 text-center border-dashed border-gray-800 bg-transparent">
+              <div className="bg-gray-900 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Rocket className="text-gray-600" size={24} />
               </div>
-              <p className="text-gray-400">No deployments found. Start by creating a new one!</p>
+              <p className="text-gray-500 text-sm">No deployments found. Start by creating a new one!</p>
             </div>
           ) : (
             deployments.map((deployment) => (

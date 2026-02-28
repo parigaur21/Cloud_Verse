@@ -6,9 +6,13 @@ export async function getHealth() {
   return res.json();
 }
 
-export async function createDeployment() {
+export async function createDeployment(name) {
   const res = await fetch(`${BASE_URL}/deploy`, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name }),
   });
   return res.json();
 }

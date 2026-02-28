@@ -2,26 +2,22 @@ import { Activity } from "lucide-react";
 
 export default function StatusBadge({ status }) {
   const configs = {
-    Building: { color: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20", pulse: true },
-    Testing: { color: "bg-orange-500/10 text-orange-500 border-orange-500/20", pulse: true },
-    Deploying: { color: "bg-blue-500/10 text-blue-500 border-blue-500/20", pulse: true },
-    Completed: { color: "bg-green-500/10 text-green-500 border-green-500/20", pulse: false },
-    Failed: { color: "bg-red-500/10 text-red-500 border-red-500/20", pulse: false },
-    Idle: { color: "bg-gray-500/10 text-gray-500 border-gray-500/20", pulse: false },
+    Building: { color: "text-warning", dot: "bg-warning" },
+    Testing: { color: "text-warning", dot: "bg-warning" },
+    Deploying: { color: "text-primary", dot: "bg-primary" },
+    Completed: { color: "text-success", dot: "bg-success" },
+    Failed: { color: "text-error", dot: "bg-error" },
+    Idle: { color: "text-gray-500", dot: "bg-gray-500" },
   };
 
   const config = configs[status] || configs.Idle;
 
+  const isSpinning = ["Building", "Testing", "Deploying"].includes(status);
+
   return (
-    <span className={`px-4 py-1.5 rounded-full text-xs font-bold border flex items-center gap-2 ${config.color}`}>
-      {config.pulse && (
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-current"></span>
-        </span>
-      )}
-      {!config.pulse && <Activity size={12} />}
-      <span className="uppercase tracking-widest">{status}</span>
-    </span>
+    <div className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${config.color}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${config.dot} ${isSpinning ? 'animate-pulse' : ''}`} />
+      <span>{status}</span>
+    </div>
   );
 }

@@ -55,6 +55,7 @@ async function initDb() {
   await db.exec(`
     CREATE TABLE IF NOT EXISTS deployments (
       id INTEGER PRIMARY KEY,
+      name TEXT,
       status TEXT,
       logs TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -76,10 +77,16 @@ app.get("/health", (req, res) => {
 app.get("/deployments", async (req, res) => {
   try {
     const rows = await db.all("SELECT * FROM deployments ORDER BY created_at DESC LIMIT 50");
-    const formattedRows = rows.map(row => ({
-      ...row,
-      logs: JSON.parse(row.logs)
-    }));
+    const formattedRows = rows.map(row => {
+      let logs = [];
+      try {
+        logs = typeof row.logs === 'string' ? JSON.parse(row.logs) : row.logs;
+      } catch (e) {
+        logger.error(`Failed to parse logs for deployment ${row.id}`, e);
+        logs = ["Error parsing history logs."];
+      }
+      return { ...row, logs };
+    });
     res.json(formattedRows);
   } catch (error) {
     logger.error("Failed to fetch deployments", error);
@@ -89,17 +96,19 @@ app.get("/deployments", async (req, res) => {
 
 app.post("/deploy", async (req, res) => {
   try {
+    const { name } = req.body || {};
     const id = Date.now();
+    const finalName = name || `cv-instance-${id.toString().slice(-4)}`;
     const initialLogs = JSON.stringify(["Build sequence initiated..."]);
 
     await db.run(
-      "INSERT INTO deployments (id, status, logs) VALUES (?, ?, ?)",
-      [id, "Building", initialLogs]
+      "INSERT INTO deployments (id, name, status, logs) VALUES (?, ?, ?, ?)",
+      [id, finalName, "Building", initialLogs]
     );
 
     simulateDeployment(id);
 
-    res.json({ id, status: "Building", logs: ["Build sequence initiated..."] });
+    res.json({ id, name: finalName, status: "Building", logs: ["Build sequence initiated..."] });
   } catch (error) {
     logger.error("Deployment failed", error);
     res.status(500).json({ error: "Could not initiate deployment" });
@@ -111,8 +120,14 @@ async function updateDeployment(id, status, newLogs) {
     const row = await db.get("SELECT logs FROM deployments WHERE id = ?", id);
     if (!row) return;
 
-    let logs = JSON.parse(row.logs);
-    logs = [...logs, ...newLogs];
+    let logs = [];
+    try {
+      logs = typeof row.logs === 'string' ? JSON.parse(row.logs) : row.logs;
+    } catch (e) {
+      logs = ["Error recovering log history."];
+    }
+
+    logs = Array.isArray(logs) ? [...logs, ...newLogs] : [...newLogs];
 
     await db.run(
       "UPDATE deployments SET status = ?, logs = ? WHERE id = ?",
@@ -127,7 +142,7 @@ function simulateDeployment(id) {
   setTimeout(() => updateDeployment(id, "Testing", ["🔍 Running security scan...", "🧪 Running unit tests..."]), 3000);
 
   setTimeout(() => {
-    const failed = Math.random() < 0.2;
+    const failed = Math.random() < 0.1; // Reduced failure rate for better UX
     if (failed) {
       updateDeployment(id, "Failed", ["❌ Error: Test suite failed in module 'core-api'", "⚠️ Stack trace logged to cloud-watch"]);
     } else {

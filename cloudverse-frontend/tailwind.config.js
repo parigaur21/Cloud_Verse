@@ -7,16 +7,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0a0a0c',
-        card: '#16161a',
+        background: '#000000',
+        card: '#111111',
+        border: '#333333',
         primary: {
-          DEFAULT: '#6366f1',
-          hover: '#4f46e5',
+          DEFAULT: '#0070f3',
+          hover: '#0061d5',
         },
-        accent: '#c084fc',
+        accent: '#0070f3',
+        success: '#0070f3',
+        error: '#ee0000',
+        warning: '#f5a623',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Menlo', 'monospace'],
       },
       animation: {
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      borderRadius: {
+        'vercel': '5px',
       }
     },
   },
