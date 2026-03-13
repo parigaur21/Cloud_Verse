@@ -1,19 +1,15 @@
 import { useEffect, useState } from "react";
 import { createDeployment, getDeployments } from "../services/api";
 import DeploymentCard from "../components/DeploymentCard";
-import { Rocket, Plus, Filter, LayoutGrid, List } from "lucide-react";
+import DeploymentModal from "../components/DeploymentModal";
+import { Rocket, Plus, Filter, LayoutGrid } from "lucide-react";
 
 export default function Deployments() {
   const [deployments, setDeployments] = useState([]);
   const [loading, setLoading] = useState(true);
-//deployments
-  useEffect(() => {
-    fetchDeployments();
-    const interval = setInterval(fetchDeployments, 2000);
-    return () => clearInterval(interval);
-  }, []);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  async function fetchDeployments() {
+  const fetchDeployments = async () => {
     try {
       const data = await getDeployments();
       setDeployments(data);
@@ -21,10 +17,15 @@ export default function Deployments() {
     } catch (error) {
       console.error("Failed to fetch deployments:", error);
     }
-  }
+  };
 
-  async function handleDeploy() {
-    const name = prompt("Enter a service name:", `service-${Math.floor(Math.random() * 1000)}`);
+  useEffect(() => {
+    fetchDeployments();
+    const interval = setInterval(fetchDeployments, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  async function handleDeploy(name) {
     if (!name) return;
     await createDeployment(name);
     fetchDeployments();
@@ -32,6 +33,11 @@ export default function Deployments() {
 
   return (
     <div className="space-y-12">
+      <DeploymentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onDeploy={handleDeploy}
+      />
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-border">
         <div>
           <h2 className="text-3xl font-bold tracking-tighter mb-1 text-white">
@@ -48,7 +54,7 @@ export default function Deployments() {
             <LayoutGrid size={16} />
           </button>
           <button
-            onClick={handleDeploy}
+            onClick={() => setIsModalOpen(true)}
             className="vercel-button flex items-center gap-2"
           >
             <Plus size={18} />

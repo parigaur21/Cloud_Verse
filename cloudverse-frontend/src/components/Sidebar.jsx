@@ -54,14 +54,37 @@ export default function Sidebar() {
             Infrastructure
           </div>
           <nav className="space-y-1">
-            <div className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 cursor-not-allowed">
-              <Globe size={18} />
-              <span>Edge Network</span>
-            </div>
-            <div className="flex items-center gap-3 px-3 py-2 text-sm text-gray-600 cursor-not-allowed">
-              <Settings size={18} />
-              <span>Settings</span>
-            </div>
+            <NavLink
+              to="/edge-network"
+              className={({ isActive }) =>
+                `${baseStyle} ${isActive
+                  ? "bg-white/10 text-white"
+                  : "text-gray-400 hover:bg-white/5 hover:text-white"
+                }`
+              }
+            >
+              <div className="flex items-center gap-3">
+                <Globe size={18} />
+                <span>Edge Network</span>
+              </div>
+              <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+            </NavLink>
+
+            <NavLink
+              to="/settings"
+              className={({ isActive }) =>
+                `${baseStyle} ${isActive
+                  ? "bg-white/10 text-white"
+                  : "text-gray-400 hover:bg-white/5 hover:text-white"
+                }`
+              }
+            >
+              <div className="flex items-center gap-3">
+                <Settings size={18} />
+                <span>Settings</span>
+              </div>
+              <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+            </NavLink>
           </nav>
         </div>
       </div>

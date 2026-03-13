@@ -1,19 +1,16 @@
-import DeploymentCard from "../components/DeploymentCard";
 import { useEffect, useState } from "react";
 import { createDeployment, getDeployments } from "../services/api";
 import { Rocket, Plus, Activity, Server, Clock, Search } from "lucide-react";
+import DeploymentCard from "../components/DeploymentCard";
+import DeploymentModal from "../components/DeploymentModal";
 
 export default function Dashboard() {
   const [deployments, setDeployments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchDeployments();
-    const interval = setInterval(fetchDeployments, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
-  async function fetchDeployments() {
+  const fetchDeployments = async () => {
     try {
       const data = await getDeployments();
       setDeployments(data);
@@ -21,17 +18,32 @@ export default function Dashboard() {
     } catch (error) {
       console.error("Failed to fetch deployments:", error);
     }
-  }
+  };
 
-  async function handleDeploy() {
-    const name = prompt("Enter a name for your deployment:", `cv-app-${Math.floor(Math.random() * 1000)}`);
+  useEffect(() => {
+    fetchDeployments();
+    const interval = setInterval(fetchDeployments, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  async function handleDeploy(name) {
     if (!name) return;
     await createDeployment(name);
     fetchDeployments();
   }
 
+  const filteredDeployments = deployments.filter(d =>
+    d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    d.id.toString().includes(searchQuery)
+  );
+
   return (
     <div className="space-y-12">
+      <DeploymentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onDeploy={handleDeploy}
+      />
       {/* Header Section */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-border">
         <div>
@@ -41,7 +53,7 @@ export default function Dashboard() {
           <p className="text-gray-400 text-sm">Manage and monitor your cloud infrastructure in real-time.</p>
         </div>
         <button
-          onClick={handleDeploy}
+          onClick={() => setIsModalOpen(true)}
           className="vercel-button flex items-center gap-2"
         >
           <Plus size={18} />
@@ -85,13 +97,15 @@ export default function Dashboard() {
             <input
               type="text"
               placeholder="Search deployments..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-black border border-border rounded-vercel py-1.5 pl-9 pr-4 text-xs focus:outline-none focus:border-white/20 transition-colors w-64 placeholder:text-gray-600"
             />
           </div>
         </div>
 
         <div className="grid gap-4">
-          {deployments.length === 0 && !loading ? (
+          {filteredDeployments.length === 0 && !loading ? (
             <div className="vercel-card p-20 text-center border-dashed border-gray-800 bg-transparent">
               <div className="bg-gray-900 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Rocket className="text-gray-600" size={24} />
@@ -99,7 +113,7 @@ export default function Dashboard() {
               <p className="text-gray-500 text-sm">No deployments found. Start by creating a new one!</p>
             </div>
           ) : (
-            deployments.map((deployment) => (
+            filteredDeployments.map((deployment) => (
               <DeploymentCard key={deployment.id} deployment={deployment} />
             ))
           )}

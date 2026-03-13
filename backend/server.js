@@ -156,8 +156,13 @@ function simulateDeployment(id) {
 }
 
 // Start Server
-initDb().then(() => {
-  app.listen(PORT, "0.0.0.0", () => {
-    logger.info(`🚀 CloudVerse Engine running on port ${PORT}`);
+initDb()
+  .then(() => {
+    app.listen(PORT, "0.0.0.0", () => {
+      logger.info(`🚀 CloudVerse Engine running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    logger.error("Failed to initialize database", err);
+    process.exit(1);
   });
-});
