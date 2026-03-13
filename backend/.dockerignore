@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+dist
+.git
+.vscode
+*.db
+error.log
+combined.log
+data
