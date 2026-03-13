@@ -6,7 +6,7 @@ import { Rocket, Plus, Filter, LayoutGrid, List } from "lucide-react";
 export default function Deployments() {
   const [deployments, setDeployments] = useState([]);
   const [loading, setLoading] = useState(true);
-
+//deployments
   useEffect(() => {
     fetchDeployments();
     const interval = setInterval(fetchDeployments, 2000);
