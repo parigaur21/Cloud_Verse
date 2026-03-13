@@ -20,10 +20,14 @@ export default function Deployments() {
   };
 
   useEffect(() => {
-    fetchDeployments();
+    const init = async () => {
+      await fetchDeployments();
+    };
+    init();
     const interval = setInterval(fetchDeployments, 2000);
     return () => clearInterval(interval);
   }, []);
+
 
   async function handleDeploy(name) {
     if (!name) return;
@@ -83,8 +87,10 @@ export default function Deployments() {
             <DeploymentCard
               key={deployment.id}
               deployment={deployment}
+              onDeleteSuccess={fetchDeployments}
             />
           ))
+
         )}
       </div>
     </div>

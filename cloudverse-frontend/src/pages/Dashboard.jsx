@@ -21,7 +21,10 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchDeployments();
+    const init = async () => {
+      await fetchDeployments();
+    };
+    init();
     const interval = setInterval(fetchDeployments, 2000);
     return () => clearInterval(interval);
   }, []);
@@ -114,8 +117,13 @@ export default function Dashboard() {
             </div>
           ) : (
             filteredDeployments.map((deployment) => (
-              <DeploymentCard key={deployment.id} deployment={deployment} />
+              <DeploymentCard 
+                key={deployment.id} 
+                deployment={deployment} 
+                onDeleteSuccess={fetchDeployments}
+              />
             ))
+
           )}
         </div>
       </section>

@@ -1,35 +1,25 @@
-# 🌐 CloudVerse: Professional Cloud Infrastructure Simulator
+# ⚡ CloudVerse: Next-Gen Cloud Orchestration
 
-CloudVerse is a production-ready dashboard for monitoring and managing mock cloud deployments. It features a modern React frontend, a persistent Node.js/SQLite backend, and is fully containerized with an Nginx reverse proxy.
+CloudVerse is a high-performance, Vercel-inspired cloud management platform designed for modern engineering teams. It provides real-time deployment monitoring, global edge network visualization, and robust infrastructure orchestration.
 
-## 🏗️ Architecture Overview
+![CloudVerse Preview](https://raw.githubusercontent.com/parii/CloudVerse/main/preview.png)
 
-```mermaid
-graph TD
-    Client[Browser/User] -->|HTTP 80| Nginx[Nginx Reverse Proxy]
-    
-    subgraph Docker_Network [CloudVerse Internal Network]
-        Nginx -->|/ | Frontend[React Service / Static Assets]
-        Nginx -->|/api/ | Backend[Node.js Engine]
-        Backend -->|Query| DB[(SQLite Database)]
-    end
-    
-    subgraph CI_CD [Automation]
-        GitHub[GitHub Repo] -->|Push| Actions[GitHub Actions]
-        Actions -->|Build & Push| DockerHub[Docker Hub]
-        DockerHub -->|Pull| EC2[AWS EC2 Instance]
-    end
-```
+## 🚀 Features
 
-## 🚀 Key Features
+- **Real-time Deployments**: Monitor build sequences and logs in real-time.
+- **Vercel-Grade UI**: Minimalist, dark-mode first design with smooth micro-animations.
+- **Multi-Stage Docker Builds**: Optimized production images for backend (Node.js/SQLite) and frontend (Vite/Nginx).
+- **Edge Network Monitoring**: Built-in global latency and regional status tracking.
+- **Automated CI/CD**: Seamless deployment to AWS EC2 via GitHub Actions.
 
-- **Premium UI**: Glassmorphism aesthetic with real-time progress animations.
-- **Persistence**: SQLite integration for tracking deployment history.
-- **DevOps Ready**: Nginx reverse proxy with automated Docker Hub propagation via GitHub Actions.
-- **Structured Logging**: Winston-powered logging for backend audit trails.
-- **Infrastructure Architecture**: Fully containerized multi-container architecture.
+## 🛠️ Tech Stack
 
-## 🛠️ Local Setup
+- **Frontend**: React 19, Tailwind CSS, Lucide Icons, Vite.
+- **Backend**: Node.js, Express, SQLite3 (Native), Winston (Logging).
+- **Infrastructure**: Docker, Docker Compose, Nginx (Reverse Proxy).
+- **CI/CD**: GitHub Actions, Docker Hub.
+
+## 📦 Local Development
 
 1. **Clone the repository**:
    ```bash
@@ -41,26 +31,38 @@ graph TD
    ```bash
    docker-compose up --build
    ```
+   The app will be available at `http://localhost`.
 
-3. **Access the application**:
-   - Dashboard: `http://localhost`
-   - Health Check: `http://localhost/api/health`
+## 🌐 Production Deployment (AWS EC2)
 
-## ☁️ Deployment on AWS EC2
+1. **Prepare your EC2**:
+   - Launch an Ubuntu instance.
+   - Run the setup script:
+     ```bash
+     curl -sSL https://raw.githubusercontent.com/your-username/CloudVerse/main/scripts/setup-ec2.sh | bash
+     ```
 
-1. **Provision EC2 Instance**: (Ubuntu 22.04 LTS recommended). 
-2. **Install Docker & Docker Compose**:
-   ```bash
-   sudo apt update && sudo apt install -y docker.io docker-compose
-   sudo usermod -aG docker $USER && newgrp docker
-   ```
-3. **Deploy the Stack**:
-   - Clone the repo on the instance and run `docker-compose up -d`.
-   - Ensure Security Groups allow inbound traffic on Port 80.
+2. **Configure GitHub Secrets**:
+   Add the following to your GitHub repo settings:
+   - `DOCKERHUB_USERNAME`: Your Docker Hub username.
+   - `DOCKERHUB_TOKEN`: Your Docker Hub access token.
+   - `EC2_HOST`: Public IP of your EC2 instance.
+   - `EC2_USER`: `ubuntu`
+   - `EC2_SSH_KEY`: Your private SSH key content (`.pem`).
 
-## 📦 Tech Stack
+3. **Deploy**:
+   Push any change to the `main` branch, and GitHub Actions will automatically:
+   - Build & push Docker images to Docker Hub.
+   - SSH into EC2 and update the containers.
 
-- **Frontend**: React 19, Tailwind CSS, Lucide Icons.
-- **Backend**: Node.js, Express, Winston (Logging), SQLite (Persistence).
-- **Orchestration**: Docker, Docker Compose, Nginx.
-- **CI/CD**: GitHub Actions.
+## 🛡️ Security
+
+CloudVerse is built with production security in mind:
+- **Helmet.js**: Secure HTTP headers.
+- **Rate Limiting**: Protects sensitive deployment endpoints.
+- **Graceful Shutdown**: Prevents database corruption during updates.
+- **Nginx Reverse Proxy**: Isolates backend services from direct public exposure.
+
+## 📄 License
+
+MIT License - Copyright (c) 2024 CloudVerse Team.

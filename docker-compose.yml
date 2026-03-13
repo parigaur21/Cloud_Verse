@@ -1,32 +1,43 @@
 services:
   nginx:
     image: nginx:alpine
+    restart: always
     ports:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - frontend
-      - backend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
     networks:
       - cloudverse-network
 
   backend:
     build: ./backend
+    restart: always
     environment:
       - NODE_ENV=production
       - PORT=5000
       - DB_PATH=/app/data/cloudverse.db
     volumes:
       - ./backend/data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - cloudverse-network
 
   frontend:
     build: ./cloudverse-frontend
+    restart: always
     networks:
       - cloudverse-network
 
 networks:
   cloudverse-network:
     driver: bridge
+

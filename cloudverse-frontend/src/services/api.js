@@ -21,3 +21,9 @@ export async function getDeployments() {
   const res = await fetch(`${BASE_URL}/deployments`);
   return res.json();
 }
+
+export async function deleteDeployment(id) {
+  await fetch(`${BASE_URL}/deployments/${id}`, {
+    method: "DELETE",
+  });
+}
