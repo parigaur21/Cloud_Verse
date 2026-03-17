@@ -2,8 +2,6 @@
 
 CloudVerse is a high-performance, Vercel-inspired cloud management platform designed for modern engineering teams. It provides real-time deployment monitoring, global edge network visualization, and robust infrastructure orchestration.
 
-![CloudVerse Preview](https://raw.githubusercontent.com/parii/CloudVerse/main/preview.png)
-
 ## 🚀 Features
 
 - **Real-time Deployments**: Monitor build sequences and logs in real-time.
