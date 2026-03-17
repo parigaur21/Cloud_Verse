@@ -26,23 +26,27 @@ WORKDIR /app
 # Install Nginx
 RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
 
-# Copy Frontend Build
-COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
+# Copy Frontend Build to standard Debian path
+COPY --from=frontend-builder /app/frontend/dist /var/www/html
 
 # Copy Backend Apps
 COPY --from=backend-builder /app/backend /app/backend
 WORKDIR /app/backend
 
-# Copy custom Nginx config
+# Copy custom Nginx config and remove default site configs
 COPY nginx.render.conf /etc/nginx/nginx.conf
+RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
 
 # Setup Start Script
 RUN echo "#!/bin/sh\n\
-npm start &\n\
+echo '🚀 Starting CloudVerse Backend...'\n\
+PORT=5000 npm start > /app/backend.log 2>&1 &\n\
+echo '🌐 Starting Nginx Proxy on port \$PORT...'\n\
+sed -i \"s/RENDER_PORT/\${PORT:-10000}/g\" /etc/nginx/nginx.conf\n\
 nginx -g 'daemon off;'" > /app/start.sh
 RUN chmod +x /app/start.sh
 
-# Render uses port 80 by default for Nginx
-EXPOSE 80
+# The EXPOSE is mostly for documentation on Render
+EXPOSE 10000
 
 CMD ["/app/start.sh"]
