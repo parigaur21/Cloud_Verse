@@ -64,3 +64,5 @@ CloudVerse is built with production security in mind:
 ## 📄 License
 
 MIT License - Copyright (c) 2024 CloudVerse Team.
+<!-- Manual deploy trigger -->
+
