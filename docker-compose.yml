@@ -15,6 +15,7 @@ services:
       - cloudverse-network
 
   backend:
+    image: ghcr.io/parigaur21/cloudverse-backend:latest
     build: ./backend
     restart: always
     environment:
@@ -32,6 +33,7 @@ services:
       - cloudverse-network
 
   frontend:
+    image: ghcr.io/parigaur21/cloudverse-frontend:latest
     build: ./cloudverse-frontend
     restart: always
     networks:
