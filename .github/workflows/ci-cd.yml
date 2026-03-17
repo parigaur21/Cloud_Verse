@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to EC2
-        if: env.EC2_HOST != ''
+        # if: env.EC2_HOST != ''
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
