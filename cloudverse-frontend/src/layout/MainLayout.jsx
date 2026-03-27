@@ -4,14 +4,15 @@ import { Outlet } from "react-router-dom";
 export default function MainLayout() {
   return (
     <div className="flex min-h-screen bg-background text-gray-100 selection:bg-primary/30 relative overflow-hidden">
-      {/* Dynamic Background Video */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-30 mix-blend-screen">
+      {/* Dynamic Background (Static GIF for Perfect Reliability) */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-black/60 z-10 mix-blend-multiply"></div>
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="absolute min-w-full min-h-full object-cover background-video"
+          className="absolute w-full h-full object-cover opacity-30 background-video"
           src="https://assets.codepen.io/3364143/7btrrd.mp4"
         ></video>
       </div>

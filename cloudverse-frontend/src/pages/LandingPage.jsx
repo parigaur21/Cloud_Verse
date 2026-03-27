@@ -24,7 +24,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background text-white overflow-hidden relative theme-container">
-      {/* Dynamic Native Background Video */}
+      {/* Dynamic Native Background Background (Cinematic GIF for 100% Reliability) */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-black/60 z-10 mix-blend-multiply"></div>
         <video
@@ -54,7 +54,7 @@ export default function LandingPage() {
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={toggleTheme}
             className="p-2 text-gray-400 hover:text-white transition-colors border border-white/10 rounded-full hover:bg-white/10 backdrop-blur-md hidden sm:block"
             title="Toggle Theme"
