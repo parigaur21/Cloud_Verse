@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { createDeployment, getDeployments } from "../services/api";
-import { Rocket, Plus, Activity, Server, Clock, Search } from "lucide-react";
+import { Rocket, Plus, Activity, Server, Clock, Search, Filter, LayoutGrid } from "lucide-react";
 import DeploymentCard from "../components/DeploymentCard";
 import DeploymentModal from "../components/DeploymentModal";
+import toast from "react-hot-toast";
 
 export default function Dashboard() {
   const [deployments, setDeployments] = useState([]);
@@ -29,9 +30,9 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  async function handleDeploy(name) {
+  async function handleDeploy(name, { mode, githubUrl } = {}) {
     if (!name) return;
-    await createDeployment(name);
+    await createDeployment(name, { source: mode, githubUrl });
     fetchDeployments();
   }
 
@@ -48,19 +49,20 @@ export default function Dashboard() {
         onDeploy={handleDeploy}
       />
       {/* Header Section */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-border">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tighter mb-1 text-white">
-            Workspace Overview
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-border/50 relative">
+        <div className="z-10">
+          <h2 className="text-4xl font-extrabold tracking-tighter mb-2 text-white">
+            Workspace <span className="text-gradient">Overview</span>
           </h2>
-          <p className="text-gray-400 text-sm">Manage and monitor your cloud infrastructure in real-time.</p>
+          <p className="text-gray-400 text-sm font-medium">Manage and monitor your cloud infrastructure in real-time.</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="vercel-button flex items-center gap-2"
+          className="vercel-button flex items-center gap-2 group relative overflow-hidden"
         >
-          <Plus size={18} />
-          Deploy New App
+          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+          <Plus size={18} className="relative z-10 group-hover:rotate-90 transition-transform duration-300" />
+          <span className="relative z-10">Deploy New App</span>
         </button>
       </header>
 
@@ -91,19 +93,27 @@ export default function Dashboard() {
 
       {/* Deployments List */}
       <section className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h3 className="text-lg font-semibold flex items-center gap-2 text-white">
             Recent Activity
           </h3>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
-            <input
-              type="text"
-              placeholder="Search deployments..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-black border border-border rounded-vercel py-1.5 pl-9 pr-4 text-xs focus:outline-none focus:border-white/20 transition-colors w-64 placeholder:text-gray-600"
-            />
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={14} />
+              <input
+                type="text"
+                placeholder="Search deployments..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-black border border-border rounded-vercel py-1.5 pl-9 pr-4 text-xs focus:outline-none focus:border-white/20 transition-colors w-full sm:w-64 placeholder:text-gray-600"
+              />
+            </div>
+            <button onClick={() => toast("Advanced filtering is available in CloudVerse Pro.", { icon: '✨' })} className="p-1.5 border border-border rounded-vercel text-gray-400 hover:text-white transition-colors bg-white/5 hidden sm:block">
+              <Filter size={14} />
+            </button>
+            <button onClick={() => toast("Grid view is coming in v2.0", { icon: '🚧' })} className="p-1.5 border border-border rounded-vercel text-gray-400 hover:text-white transition-colors bg-white/5 hidden sm:block">
+              <LayoutGrid size={14} />
+            </button>
           </div>
         </div>
 

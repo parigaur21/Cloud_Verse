@@ -3,6 +3,7 @@ import { createDeployment, getDeployments } from "../services/api";
 import DeploymentCard from "../components/DeploymentCard";
 import DeploymentModal from "../components/DeploymentModal";
 import { Rocket, Plus, Filter, LayoutGrid } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function Deployments() {
   const [deployments, setDeployments] = useState([]);
@@ -29,9 +30,9 @@ export default function Deployments() {
   }, []);
 
 
-  async function handleDeploy(name) {
+  async function handleDeploy(name, { mode, githubUrl } = {}) {
     if (!name) return;
-    await createDeployment(name);
+    await createDeployment(name, { source: mode, githubUrl });
     fetchDeployments();
   }
 
@@ -51,10 +52,10 @@ export default function Deployments() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="p-2 border border-border rounded-vercel text-gray-400 hover:text-white transition-colors bg-white/5">
+          <button onClick={() => toast("Advanced filtering is available in CloudVerse Pro.", { icon: '✨' })} className="p-2 border border-border rounded-vercel text-gray-400 hover:text-white transition-colors bg-white/5">
             <Filter size={16} />
           </button>
-          <button className="p-2 border border-border rounded-vercel text-gray-400 hover:text-white transition-colors bg-white/5">
+          <button onClick={() => toast("Grid view is coming in v2.0", { icon: '🚧' })} className="p-2 border border-border rounded-vercel text-gray-400 hover:text-white transition-colors bg-white/5">
             <LayoutGrid size={16} />
           </button>
           <button
@@ -76,7 +77,7 @@ export default function Deployments() {
             <h3 className="text-xl font-bold mb-2 text-white">No deployments yet</h3>
             <p className="text-gray-500 mb-8 max-w-xs mx-auto text-sm">Your cloud workspace is empty. Launch your first application to see it here.</p>
             <button
-              onClick={handleDeploy}
+              onClick={() => setIsModalOpen(true)}
               className="vercel-button-outline text-xs px-6"
             >
               Create First Deployment

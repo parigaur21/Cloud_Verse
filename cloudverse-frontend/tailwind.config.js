@@ -7,14 +7,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#000000',
-        card: '#111111',
-        border: '#333333',
+        background: '#030305',
+        card: 'rgba(20, 20, 24, 0.6)',
+        border: 'rgba(255, 255, 255, 0.08)',
         primary: {
           DEFAULT: '#0070f3',
-          hover: '#0061d5',
+          hover: '#3291ff',
+          glow: 'rgba(0, 112, 243, 0.5)',
         },
-        accent: '#0070f3',
+        accent: {
+          DEFAULT: '#7928ca',
+          glow: 'rgba(121, 40, 202, 0.5)',
+        },
         success: '#0070f3',
         error: '#ee0000',
         warning: '#f5a623',
@@ -23,11 +27,46 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Menlo', 'monospace'],
       },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(ellipse at center, var(--tw-gradient-stops))',
+        'mesh': 'radial-gradient(at 40% 20%, hsla(228,100%,74%,0.15) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(189,100%,56%,0.15) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(355,100%,93%,0.1) 0px, transparent 50%)',
+      },
       animation: {
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'blob': 'blob 7s infinite',
+        'float': 'float 6s ease-in-out infinite',
+        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+        'glow': 'glow 2s ease-in-out infinite alternate',
+      },
+      keyframes: {
+        blob: {
+          '0%': { transform: 'translate(0px, 0px) scale(1)' },
+          '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+          '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+          '100%': { transform: 'translate(0px, 0px) scale(1)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        glow: {
+          '0%': { boxShadow: '0 0 5px rgba(0, 112, 243, 0.2), 0 0 20px rgba(0, 112, 243, 0.1)' },
+          '100%': { boxShadow: '0 0 10px rgba(0, 112, 243, 0.6), 0 0 30px rgba(0, 112, 243, 0.3)' },
+        }
       },
       borderRadius: {
-        'vercel': '5px',
+        'vercel': '8px',
+      },
+      boxShadow: {
+        'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
+        'neon': '0 0 20px rgba(0, 112, 243, 0.3)',
+      },
+      backdropBlur: {
+        'xs': '2px',
       }
     },
   },

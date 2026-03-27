@@ -1,7 +1,7 @@
 import StatusBadge from "./StatusBadge";
 import ProgressBar from "./ProgressBar";
 import { useEffect, useRef, useState } from "react";
-import { Server, Trash2, Loader2, Copy, Check } from "lucide-react";
+import { Server, Trash2, Loader2, Copy, Check, Github, Upload } from "lucide-react";
 import { deleteDeployment } from "../services/api";
 
 export default function DeploymentCard({ deployment, onDeleteSuccess }) {
@@ -38,46 +38,57 @@ export default function DeploymentCard({ deployment, onDeleteSuccess }) {
 
   if (!deployment) return null;
 
+  const isBuilding = ['building', 'testing', 'deploying'].includes(deployment.status?.toLowerCase());
+  const shadowGlow = isBuilding ? 'shadow-neon border-primary/50' : 'hover:border-white/20';
+
   return (
-    <div className={`vercel-card overflow-hidden group ${isDeleting ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
-      <div className="p-4 sm:p-6">
+    <div className={`vercel-card overflow-hidden group ${isDeleting ? 'opacity-50 grayscale pointer-events-none' : ''} ${shadowGlow}`}>
+      <div className="p-4 sm:p-6 relative">
+      {isBuilding && <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent animate-pulse-slow"></div>}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 border border-border rounded-vercel flex items-center justify-center bg-white/5">
-              <Server className="text-gray-400 group-hover:text-white transition-colors" size={18} />
+            <div className={`w-12 h-12 border border-border rounded-xl flex items-center justify-center bg-white/5 backdrop-blur-md transition-all duration-500 ${isBuilding ? 'border-primary/50 text-glow' : ''}`}>
+              <Server className={`text-gray-400 group-hover:text-primary transition-colors ${isBuilding ? 'animate-pulse text-primary' : ''}`} size={22} />
             </div>
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h3 className="font-semibold text-white">
+                <h3 className="font-extrabold text-lg text-white group-hover:text-glow transition-all">
                   {deployment.name}
                 </h3>
                 <StatusBadge status={deployment.status} />
               </div>
               <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                {deployment.source === 'github' && (
+                  <span className="flex items-center gap-1 text-blue-400"><Github size={10} />GitHub</span>
+                )}
+                {deployment.source === 'upload' && (
+                  <span className="flex items-center gap-1 text-purple-400"><Upload size={10} />Upload</span>
+                )}
+                {deployment.source && <span>•</span>}
                 <span>US-EAST-1</span>
                 <span>•</span>
                 <button 
                   onClick={handleCopy}
-                  className="flex items-center gap-1 hover:text-white transition-colors group/id"
+                  className="flex items-center gap-1 hover:text-primary transition-colors group/id"
                 >
                   <span className="truncate max-w-[100px]">ID: {deployment.id}</span>
-                  {copied ? <Check size={10} className="text-success" /> : <Copy size={10} className="opacity-0 group-hover/id:opacity-100" />}
+                  {copied ? <Check size={10} className="text-success" /> : <Copy size={10} className="opacity-0 group-hover/id:opacity-100 transition-opacity" />}
                 </button>
                 <span>•</span>
                 <span>{deployment.created_at ? new Date(deployment.created_at).toLocaleDateString() : "Pending"}</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button className="vercel-button-outline px-3 py-1.5 text-xs">
-              View Details
+          <div className="flex items-center gap-2 z-10">
+            <button className="vercel-button-outline px-4 py-1.5 text-xs">
+              View Metrics
             </button>
             <button 
               onClick={handleDelete}
-              className="p-2 text-gray-500 hover:text-error hover:bg-error/10 rounded-vercel transition-all"
+              className="p-2 text-gray-500 hover:text-error hover:bg-error/20 rounded-xl transition-all border border-transparent hover:border-error/30"
               title="Delete Deployment"
             >
-              {isDeleting ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+              {isDeleting ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
             </button>
           </div>
         </div>
@@ -87,16 +98,19 @@ export default function DeploymentCard({ deployment, onDeleteSuccess }) {
 
           <div
             ref={logRef}
-            className="bg-black rounded-vercel p-3 font-mono text-[11px] border border-border h-32 overflow-y-auto scrollbar-hide"
+            className="bg-black/80 backdrop-blur-md rounded-xl p-4 font-mono text-[12px] border border-border/50 h-32 overflow-y-auto scrollbar-hide shadow-inner relative"
           >
-            <div className="flex items-center justify-between mb-3 text-[10px] font-bold text-gray-600 uppercase tracking-widest sticky top-0 bg-black pb-2 border-b border-white/5">
-              <span>Terminal Output</span>
-              <span className="text-primary truncate ml-4">INSTANCE_ID: {deployment.id}</span>
+            <div className="flex items-center justify-between mb-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest sticky top-0 bg-black/90 backdrop-blur-xl pb-2 border-b border-border/50 z-10">
+              <span className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                Live Terminal
+              </span>
+              <span className="text-primary truncate ml-4 opacity-70">INSTANCE: {deployment.id}</span>
             </div>
             {(deployment.logs || []).map((log, index) => (
-              <div key={index} className="flex gap-3 mb-1 group/log">
-                <span className="text-gray-700 select-none w-4">{index + 1}</span>
-                <span className="text-gray-400 group-hover/log:text-gray-300 transition-colors">{log}</span>
+              <div key={index} className="flex gap-4 mb-2 group/log hover:bg-white/5 p-1 rounded transition-colors">
+                <span className="text-gray-600 select-none w-4">{index + 1}</span>
+                <span className="text-gray-300 group-hover/log:text-white group-hover/log:text-glow transition-all">{log}</span>
               </div>
             ))}
           </div>

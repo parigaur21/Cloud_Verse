@@ -1,6 +1,13 @@
 import { Settings as SettingsIcon, Shield, Bell, User, Cloud, Database } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function Settings() {
+  const handleNavClick = (item) => {
+    if (item !== "General") {
+      toast(`${item} settings will be available in the pro tier.`, { icon: '🔒' });
+    }
+  };
+
   return (
     <div className="space-y-12">
       <header className="pb-8 border-b border-border">
@@ -14,6 +21,7 @@ export default function Settings() {
             {["General", "Security", "Notifications", "Billing", "Team"].map((item) => (
               <button
                 key={item}
+                onClick={() => handleNavClick(item)}
                 className={`w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-vercel transition-colors ${item === "General" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
               >
                 {item === "General" && <SettingsIcon size={16} />}
@@ -38,14 +46,14 @@ export default function Settings() {
                 <code className="text-sm text-primary">API_SECRET_KEY</code>
                 <span className="text-gray-600 text-xs">••••••••••••••••</span>
               </div>
-              <button className="vercel-button-outline text-xs mt-2">Add Variable</button>
+              <button onClick={() => toast("Variables are managed in Render dashboard for this environment.")} className="vercel-button-outline text-xs mt-2">Add Variable</button>
             </div>
           </div>
 
           <div className="vercel-card p-6 border-white/5 bg-white/[0.02]">
             <h3 className="text-lg font-semibold text-white mb-4 italic">Danger Zone</h3>
             <p className="text-gray-400 text-sm mb-6">Permanently delete this project and all of its deployments. This action is not reversible.</p>
-            <button className="px-4 py-2 border border-error/20 bg-error/10 text-error text-xs font-bold rounded-vercel hover:bg-error/20 transition-all">
+            <button onClick={() => toast.error("You cannot delete the primary workspace project from this interface.")} className="px-4 py-2 border border-error/20 bg-error/10 text-error text-xs font-bold rounded-vercel hover:bg-error/20 transition-all">
               Delete Project
             </button>
           </div>

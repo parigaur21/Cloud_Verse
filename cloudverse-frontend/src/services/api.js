@@ -6,24 +6,27 @@ export async function getHealth() {
   return res.json();
 }
 
-export async function createDeployment(name) {
+export async function createDeployment(name, { source, githubUrl } = {}) {
   const res = await fetch(`${BASE_URL}/deploy`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, source, githubUrl }),
   });
-  return res.json();
+  const data = await res.json();
+  return data.deployment ? data.deployment : data;
 }
 
 export async function getDeployments() {
   const res = await fetch(`${BASE_URL}/deployments`);
-  return res.json();
+  const data = await res.json();
+  return data.deployments ? data.deployments : data;
 }
 
 export async function deleteDeployment(id) {
   await fetch(`${BASE_URL}/deployments/${id}`, {
     method: "DELETE",
   });
-}
+}
+

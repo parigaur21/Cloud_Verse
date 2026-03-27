@@ -3,14 +3,20 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const winston = require("winston");
-const { open } = require("sqlite");
-const sqlite3 = require("sqlite3");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
-const path = require("path");
 
+// ── Route Imports ────────────────────────────────────────────
+const authRoutes = require("./routes/authRoutes");
+const projectRoutes = require("./routes/projectRoutes");
+const deploymentRoutes = require("./routes/deploymentRoutes");
+const aiRoutes = require("./routes/aiRoutes");
+const logRoutes = require("./routes/logRoutes");
 
-// Logging Configuration
+// ── Supabase Client (validates env on import) ────────────────
+const supabase = require("./config/supabaseClient");
+
+// ── Logging Configuration ───────────────────────────────────
 const logger = winston.createLogger({
   level: "info",
   format: winston.format.combine(
@@ -24,187 +30,94 @@ const logger = winston.createLogger({
         winston.format.simple()
       ),
     }),
-    new winston.transports.File({ filename: "error.log", level: "error" }),
-    new winston.transports.File({ filename: "combined.log" }),
   ],
 });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, "cloudverse.db");
 
-// Middlewares
+// ── Middlewares ──────────────────────────────────────────────
 app.use(helmet());
 app.use(cors({
   origin: process.env.FRONTEND_URL || "*",
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
 }));
 app.use(express.json());
 app.use(morgan("combined", { stream: { write: (message) => logger.info(message.trim()) } }));
 
-
-// Rate Limiting
+// ── Rate Limiting ───────────────────────────────────────────
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
 });
 app.use("/deploy", limiter);
+app.use("/ai", limiter);
+app.use("/auth", limiter);
 
-let db;
+// ── Routes ──────────────────────────────────────────────────
+app.use(authRoutes);
+app.use(projectRoutes);
+app.use(deploymentRoutes);
+app.use(aiRoutes);
+app.use(logRoutes);
 
-// Initialize Database
-async function initDb() {
-  db = await open({
-    filename: DB_PATH,
-    driver: sqlite3.Database,
-  });
-
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS deployments (
-      id INTEGER PRIMARY KEY,
-      name TEXT,
-      status TEXT,
-      logs TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  logger.info("Database initialized successfully");
-}
-
+// ── Health Check & Root Message ─────────────────────────────
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "OK",
     service: "cloudverse-backend",
+    database: "Supabase Postgres",
     uptime: process.uptime(),
-    db_connected: !!db,
+    version: "3.0.0",
   });
 });
 
-app.get("/deployments", async (req, res) => {
-  try {
-    const rows = await db.all("SELECT * FROM deployments ORDER BY created_at DESC LIMIT 50");
-    const formattedRows = rows.map(row => {
-      let logs = [];
-      try {
-        logs = typeof row.logs === 'string' ? JSON.parse(row.logs) : row.logs;
-      } catch (e) {
-        logger.error(`Failed to parse logs for deployment ${row.id}`, e);
-        logs = ["Error parsing history logs."];
-      }
-      return { ...row, logs };
-    });
-    res.json(formattedRows);
-  } catch (error) {
-    logger.error("Failed to fetch deployments", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
+app.get("/", (req, res) => {
+  res.send(`
+    <html>
+      <head><title>CloudVerse API</title></head>
+      <body style="font-family: sans-serif; padding: 2rem; background:#030305; color:#fff;">
+        <h2>🚀 CloudVerse Backend API v3 is Running!</h2>
+        <p>Database: <b>Supabase Postgres</b></p>
+        <p>If you're running locally, the React UI is at <b>http://localhost:5173</b></p>
+      </body>
+    </html>
+  `);
 });
 
-app.delete("/deployments/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await db.run("DELETE FROM deployments WHERE id = ?", id);
-    if (result.changes === 0) {
-      return res.status(404).json({ error: "Deployment not found" });
-    }
-    logger.info(`Deployment ${id} deleted`);
-    res.status(204).send();
-  } catch (error) {
-    logger.error(`Failed to delete deployment ${req.params.id}`, error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-
-app.post("/deploy", async (req, res) => {
-  try {
-    const { name } = req.body || {};
-    const id = Date.now();
-    const finalName = name || `cv-instance-${id.toString().slice(-4)}`;
-    const initialLogs = JSON.stringify(["Build sequence initiated..."]);
-
-    await db.run(
-      "INSERT INTO deployments (id, name, status, logs) VALUES (?, ?, ?, ?)",
-      [id, finalName, "Building", initialLogs]
-    );
-
-    simulateDeployment(id);
-
-    res.json({ id, name: finalName, status: "Building", logs: ["Build sequence initiated..."] });
-  } catch (error) {
-    logger.error("Deployment failed", error);
-    res.status(500).json({ error: "Could not initiate deployment" });
-  }
-});
-
-async function updateDeployment(id, status, newLogs) {
-  try {
-    const row = await db.get("SELECT logs FROM deployments WHERE id = ?", id);
-    if (!row) return;
-
-    let logs = [];
-    try {
-      logs = typeof row.logs === 'string' ? JSON.parse(row.logs) : row.logs;
-    } catch (e) {
-      logs = ["Error recovering log history."];
-    }
-
-    logs = Array.isArray(logs) ? [...logs, ...newLogs] : [...newLogs];
-
-    await db.run(
-      "UPDATE deployments SET status = ?, logs = ? WHERE id = ?",
-      [status, JSON.stringify(logs), id]
-    );
-  } catch (error) {
-    logger.error(`Error updating deployment ${id}`, error);
-  }
-}
-
-function simulateDeployment(id) {
-  setTimeout(() => updateDeployment(id, "Testing", ["🔍 Running security scan...", "🧪 Running unit tests..."]), 3000);
-
-  setTimeout(() => {
-    const failed = Math.random() < 0.1; // Reduced failure rate for better UX
-    if (failed) {
-      updateDeployment(id, "Failed", ["❌ Error: Test suite failed in module 'core-api'", "⚠️ Stack trace logged to cloud-watch"]);
-    } else {
-      updateDeployment(id, "Deploying", ["📦 Packaging assets...", "🚀 Pushing to edge nodes..."]);
-
-      setTimeout(() => {
-        updateDeployment(id, "Completed", ["✅ Deployment successful!", "🌐 App live at: https://cv-instance-" + id.toString().slice(-4) + ".cloudverse.io"]);
-      }, 3000);
-    }
-  }, 6000);
-}
-
-// Start Server
-initDb()
-  .then(() => {
-    const server = app.listen(PORT, "0.0.0.0", () => {
-      logger.info(`🚀 CloudVerse Engine running on port ${PORT}`);
-    });
-
-    // Graceful Shutdown
-    const shutdown = async () => {
-      logger.info("Shutdown signal received. Closing resources...");
-      server.close(() => {
-        logger.info("HTTP server closed.");
-        if (db) {
-          db.close().then(() => {
-            logger.info("Database connection closed.");
-            process.exit(0);
-          });
-        } else {
-          process.exit(0);
-        }
-      });
-    };
-
-    process.on("SIGTERM", shutdown);
-    process.on("SIGINT", shutdown);
-  })
-  .catch((err) => {
-    logger.error("Failed to initialize database", err);
+// ── Ping Supabase & Start Server ─────────────────────────────
+async function startServer() {
+  // Quick connectivity check
+  const { error } = await supabase.from("app_users").select("id").limit(1);
+  if (error && error.code !== 'PGRST116') {
+    logger.error("Failed to connect to Supabase:", error.message);
     process.exit(1);
-  });
+  }
+  logger.info("✅ Supabase connection verified");
+
+  const server = app.listen(PORT, "0.0.0.0", () => {
+    logger.info(`🚀 CloudVerse Engine v3.0 (Supabase) running on port ${PORT}`);
+    logger.info(`📋 Auth:        POST /auth/signup, POST /auth/login, GET /auth/me`);
+    logger.info(`📁 Projects:    CRUD /projects`);
+    logger.info(`🚀 Deployments: POST /deploy, GET /deployments, PATCH /deployments/:id/status`);
+    logger.info(`🤖 AI:          POST /ai/devops`);
+    logger.info(`📝 Logs:        POST /logs, GET /logs, DELETE /logs/purge`);
+  });
+
+  // Graceful Shutdown
+  const shutdown = async () => {
+    logger.info("Shutdown signal received. Closing server...");
+    server.close(() => {
+      logger.info("HTTP server closed.");
+      process.exit(0);
+    });
+  };
+
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
+}
+
+startServer().catch((err) => {
+  logger.error("Failed to start server:", err);
+  process.exit(1);
+});

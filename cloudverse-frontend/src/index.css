@@ -29,18 +29,22 @@
 
 @layer components {
     .vercel-card {
-        @apply bg-card border border-border rounded-vercel transition-all duration-200;
+        @apply bg-card border border-border rounded-vercel backdrop-blur-xl transition-all duration-300 shadow-[0_4px_30px_rgba(0,0,0,0.1)] hover:border-white/20;
     }
 
     .vercel-button {
-        @apply px-4 py-2 bg-white text-black font-medium rounded-vercel hover:bg-white/90 active:scale-[0.98] transition-all;
+        @apply px-4 py-2 bg-white text-black font-semibold rounded-vercel hover:bg-white/90 active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)];
     }
 
     .vercel-button-outline {
-        @apply px-4 py-2 bg-transparent text-white font-medium border border-border rounded-vercel hover:bg-white/5 active:scale-[0.98] transition-all;
+        @apply px-4 py-2 bg-transparent text-white font-medium border border-border rounded-vercel hover:bg-white/10 active:scale-[0.98] transition-all backdrop-blur-md;
     }
 
     .text-glow {
-        text-shadow: 0 0 10px rgba(0, 112, 243, 0.4);
+        text-shadow: 0 0 15px rgba(0, 112, 243, 0.6), 0 0 30px rgba(0, 112, 243, 0.2);
+    }
+    
+    .text-gradient {
+        @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-primary to-accent;
     }
 }
