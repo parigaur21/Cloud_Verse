@@ -4,14 +4,16 @@ import { Outlet } from "react-router-dom";
 export default function MainLayout() {
   return (
     <div className="flex min-h-screen bg-background text-gray-100 selection:bg-primary/30 relative overflow-hidden">
-      {/* Dynamic Background Video - Cyberpunk Car Loop via YouTube */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-20 mix-blend-screen filter saturate-150">
-        <iframe
-          className="absolute top-1/2 left-1/2 w-[100vw] h-[56.25vw] min-h-[100vh] min-w-[177.77vh] -translate-x-1/2 -translate-y-1/2 border-none"
-          src="https://www.youtube-nocookie.com/embed/W0LHTWG-UmQ?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&playlist=W0LHTWG-UmQ"
-          allow="autoplay; encrypted-media"
-          title="Cyberpunk Loop"
-        ></iframe>
+      {/* Dynamic Background Video */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-30 mix-blend-screen">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute min-w-full min-h-full object-cover"
+          src="https://assets.codepen.io/3364143/7btrrd.mp4"
+        ></video>
       </div>
 
       {/* Animated Background Mesh and Glowing Blobs */}

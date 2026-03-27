@@ -1,20 +1,40 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap, Github, Upload, Globe, Rocket, ArrowRight, Terminal, Shield, Cpu } from "lucide-react";
+import { Zap, Github, Upload, Globe, Rocket, ArrowRight, Terminal, Shield, Cpu, Moon, Sun } from "lucide-react";
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const isLight = localStorage.getItem("theme") === "light";
+    if (isLight) document.body.classList.add("light-mode");
+    return !isLight;
+  });
+
+  const toggleTheme = () => {
+    if (isDarkMode) {
+      document.body.classList.add("light-mode");
+      localStorage.setItem("theme", "light");
+      setIsDarkMode(false);
+    } else {
+      document.body.classList.remove("light-mode");
+      localStorage.setItem("theme", "dark");
+      setIsDarkMode(true);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background text-white overflow-hidden relative">
-      {/* Background Video */}
+    <div className="min-h-screen bg-background text-white overflow-hidden relative theme-container">
+      {/* Dynamic Native Background Video */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-black/60 z-10"></div>
-        <iframe
-          className="absolute top-1/2 left-1/2 w-[100vw] h-[56.25vw] min-h-[100vh] min-w-[177.77vh] -translate-x-1/2 -translate-y-1/2 border-none opacity-40"
-          src="https://www.youtube-nocookie.com/embed/W0LHTWG-UmQ?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&playlist=W0LHTWG-UmQ&start=10"
-          allow="autoplay; encrypted-media"
-          title="Background"
-        ></iframe>
+        <div className="absolute inset-0 bg-black/60 z-10 mix-blend-multiply"></div>
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute w-full h-full object-cover opacity-50"
+          src="https://assets.codepen.io/3364143/7btrrd.mp4"
+        ></video>
       </div>
 
       {/* Mesh gradient overlays */}
@@ -34,14 +54,21 @@ export default function LandingPage() {
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
+          <button 
+            onClick={toggleTheme}
+            className="p-2 text-gray-400 hover:text-white transition-colors border border-white/10 rounded-full hover:bg-white/10 backdrop-blur-md hidden sm:block"
+            title="Toggle Theme"
+          >
+            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+          <a href="https://github.com/parigaur21/CloudVerse" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
             Docs
           </a>
           <a href="#features" className="text-gray-400 hover:text-white transition-colors text-sm font-medium">
             Features
           </a>
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/auth")}
             className="px-5 py-2 bg-white/10 border border-white/20 text-white text-sm font-semibold rounded-lg hover:bg-white/20 backdrop-blur-md transition-all"
           >
             Sign In
@@ -70,7 +97,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/auth")}
               className="px-8 py-3.5 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-xl shadow-[0_0_30px_rgba(0,112,243,0.4)] hover:shadow-[0_0_50px_rgba(0,112,243,0.6)] transition-all text-base flex items-center gap-2 group"
             >
               Get Started Free
@@ -209,7 +236,7 @@ export default function LandingPage() {
           </h2>
           <p className="text-gray-400 text-lg mb-10">Start deploying for free. No credit card required.</p>
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/auth")}
             className="px-10 py-4 bg-gradient-to-r from-primary to-accent text-white text-lg font-bold rounded-xl shadow-[0_0_40px_rgba(0,112,243,0.5)] hover:shadow-[0_0_60px_rgba(0,112,243,0.7)] transition-all flex items-center gap-3 mx-auto group"
           >
             Start Deploying Now

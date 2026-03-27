@@ -48,3 +48,21 @@
         @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-primary to-accent;
     }
 }
+
+/* Light Mode Core */
+body.light-mode {
+    background-color: #f7f9fa !important;
+    filter: invert(1) hue-rotate(180deg);
+}
+
+body.light-mode img, 
+body.light-mode video, 
+body.light-mode iframe,
+body.light-mode .text-gradient,
+body.light-mode .bg-gradient-to-r {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+body.light-mode .bg-black {
+    background-color: #222 !important; /* Inverts to light gray */
+}

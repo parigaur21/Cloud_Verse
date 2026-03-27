@@ -1,4 +1,4 @@
-import { LayoutDashboard, Rocket, Zap, Settings, Globe, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Rocket, Zap, Settings, Globe, ChevronRight, LogOut, User } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -103,6 +103,29 @@ export default function Sidebar() {
           <div className="text-xs text-gray-300 mb-4 font-medium relative z-10">Scale your infrastructure globally with 0ms latency.</div>
           <button onClick={() => toast("Upgrade portal is processing. Watch for our Launch Day email!", { icon: '🚀' })} className="w-full py-2 bg-gradient-to-r from-primary to-accent text-white shadow-lg text-xs font-bold rounded-vercel relative z-10 transition-transform group-hover/upgrade:scale-[1.03] active:scale-[0.98]">
             Upgrade Now
+          </button>
+        </div>
+
+        <div className="mt-6 flex items-center justify-between text-gray-400">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+              <User size={14} />
+            </div>
+            <div className="text-xs font-medium truncate w-24">
+              {localStorage.getItem("userName") || "Developer"}
+            </div>
+          </div>
+          <button 
+            onClick={() => {
+              localStorage.removeItem("isAuthenticated");
+              localStorage.removeItem("userName");
+              toast("Logged out successfully");
+              navigate("/");
+            }}
+            className="p-2 hover:bg-white/10 rounded-lg hover:text-white transition-colors"
+            title="Log Out"
+          >
+            <LogOut size={16} />
           </button>
         </div>
       </div>
