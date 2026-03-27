@@ -56,7 +56,7 @@ body.light-mode {
 }
 
 body.light-mode img, 
-body.light-mode video, 
+body.light-mode video.background-video, 
 body.light-mode iframe,
 body.light-mode .text-gradient,
 body.light-mode .bg-gradient-to-r {

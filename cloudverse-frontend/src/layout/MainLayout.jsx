@@ -11,8 +11,8 @@ export default function MainLayout() {
           loop
           muted
           playsInline
-          className="absolute min-w-full min-h-full object-cover"
-          src="https://cdn.coverr.co/videos/coverr-server-room-1-2950/1080p.mp4"
+          className="absolute min-w-full min-h-full object-cover background-video"
+          src="https://assets.codepen.io/3364143/7btrrd.mp4"
         ></video>
       </div>
 

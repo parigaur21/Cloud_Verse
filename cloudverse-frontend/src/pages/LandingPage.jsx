@@ -32,8 +32,8 @@ export default function LandingPage() {
           loop
           muted
           playsInline
-          className="absolute w-full h-full object-cover opacity-50"
-          src="https://cdn.coverr.co/videos/coverr-server-room-1-2950/1080p.mp4"
+          className="absolute w-full h-full object-cover opacity-50 bg-black background-video"
+          src="https://assets.codepen.io/3364143/7btrrd.mp4"
         ></video>
       </div>
 
