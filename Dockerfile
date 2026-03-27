@@ -40,8 +40,7 @@ RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
 # Setup Start Script
 RUN echo "#!/bin/sh\n\
 echo '🚀 Starting CloudVerse Backend...'\n\
-mkdir -p /app/data\n\
-PORT=5000 npm start > /app/backend.log 2>&1 &\n\
+cd /app/backend && PORT=5000 npm start > /app/backend.log 2>&1 &\n\
 echo '🌐 Starting Nginx Proxy on port \$PORT...'\n\
 sed -i \"s/RENDER_PORT/\${PORT:-10000}/g\" /etc/nginx/nginx.conf\n\
 nginx -g 'daemon off;'" > /app/start.sh
