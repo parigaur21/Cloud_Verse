@@ -12,7 +12,7 @@ export default function MainLayout() {
           muted
           playsInline
           className="absolute min-w-full min-h-full object-cover"
-          src="https://assets.codepen.io/3364143/7btrrd.mp4"
+          src="https://cdn.coverr.co/videos/coverr-server-room-1-2950/1080p.mp4"
         ></video>
       </div>
 

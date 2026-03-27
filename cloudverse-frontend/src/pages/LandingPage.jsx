@@ -33,7 +33,7 @@ export default function LandingPage() {
           muted
           playsInline
           className="absolute w-full h-full object-cover opacity-50"
-          src="https://assets.codepen.io/3364143/7btrrd.mp4"
+          src="https://cdn.coverr.co/videos/coverr-server-room-1-2950/1080p.mp4"
         ></video>
       </div>
 

@@ -87,13 +87,14 @@ app.get("/", (req, res) => {
 
 // ── Ping Supabase & Start Server ─────────────────────────────
 async function startServer() {
-  // Quick connectivity check
+  // Quick connectivity check (Graceful)
   const { error } = await supabase.from("app_users").select("id").limit(1);
   if (error && error.code !== 'PGRST116') {
-    logger.error("Failed to connect to Supabase:", error.message);
-    process.exit(1);
+    logger.warn("⚠️ Supabase connected but threw an error (Tables might not be fully initialized). Error: " + error.message);
+    logger.warn("⚠️ Server will still start to allow API routes, but database transactions may fail.");
+  } else {
+    logger.info("✅ Supabase connection verified");
   }
-  logger.info("✅ Supabase connection verified");
 
   const server = app.listen(PORT, "0.0.0.0", () => {
     logger.info(`🚀 CloudVerse Engine v3.0 (Supabase) running on port ${PORT}`);
